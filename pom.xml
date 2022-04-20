@@ -930,7 +930,6 @@
                     <version>${alfresco.maven-plugin.version}</version>
                     <extensions>true</extensions>
                 </plugin>
-                <!-- Temporary disable of the plugin to run the tests
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
@@ -945,7 +944,7 @@
                             <configuration>
                                 <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
-                                <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
+                                <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio|org\.freemarker).*</excludedGroups>
                                 <failIfWarning>true</failIfWarning>
                                 <includedLicenses>
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt
@@ -960,7 +959,6 @@
                         </execution>
                     </executions>
                 </plugin>
-                -->
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
                     <configuration>
