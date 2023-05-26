@@ -1751,19 +1751,21 @@ public class FixedAclUpdaterTest
 
         public boolean hasPermission(Long nodeId, String authority, String permission)
         {
-            boolean hasExpectedPermission = false;
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeDAO.getNodePair(nodeId).getSecond());
-            for (Iterator<AccessPermission> iterator = permissions.iterator(); iterator.hasNext();)
-            {
-                AccessPermission accessPermission = (AccessPermission) iterator.next();
-                if (accessPermission.getPermission().equalsIgnoreCase(permission)
-                        && accessPermission.getAuthority().equalsIgnoreCase(authority))
+            return txnHelper.doInTransaction((RetryingTransactionCallback<Boolean>) () -> {
+                boolean hasExpectedPermission = false;
+                Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeDAO.getNodePair(nodeId).getSecond());
+                for (Iterator<AccessPermission> iterator = permissions.iterator(); iterator.hasNext();)
                 {
-                    hasExpectedPermission = true;
-                    break;
+                    AccessPermission accessPermission = (AccessPermission) iterator.next();
+                    if (accessPermission.getPermission().equalsIgnoreCase(permission)
+                            && accessPermission.getAuthority().equalsIgnoreCase(authority))
+                    {
+                        hasExpectedPermission = true;
+                        break;
+                    }
                 }
-            }
-            return hasExpectedPermission;
+                return hasExpectedPermission;
+            }, false, true);
         }
 
         public boolean firstChildHasPermission(String authority, String permission)
