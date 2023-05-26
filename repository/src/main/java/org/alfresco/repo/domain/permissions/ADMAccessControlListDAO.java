@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -70,6 +71,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     private AclDAO aclDaoComponent;
     
     private BehaviourFilter behaviourFilter;
+
+    private SimpleCache<Long, Long> nodeAclCache;
     private boolean preserveAuditableData = true;
     
     /**maxim transaction time allowed for {@link #setFixedAcls(Long, Long, Long, Long, List, boolean, AsyncCallParameters, boolean)} */
@@ -93,6 +96,11 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setNodeAclCache(SimpleCache<Long, Long> nodeAclCache)
+    {
+        this.nodeAclCache = nodeAclCache;
     }
 
     public void setPreserveAuditableData(boolean preserveAuditableData)
@@ -124,7 +132,16 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     {
         Long nodeId = getNodeIdNotNull(nodeRef);
         Long aclId = nodeDAO.getNodeAclId(nodeId);
+        checkAclConcurrency(nodeId, aclId);
         return aclDaoComponent.getAcl(aclId);
+    }
+
+    private void checkAclConcurrency(Long nodeId, Long aclId)
+    {
+        if (nodeAclCache.contains(nodeId) && nodeAclCache.get(nodeId) != aclId)
+        {
+            throw new ConcurrencyFailureException("Concurrent ACL change for node " + nodeId);
+        }
     }
 
     public Acl getAccessControlList(StoreRef storeRef)
@@ -334,7 +351,9 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        setFixedAcls(getNodeIdNotNull(parent), inheritFrom, null, sharedAclToReplace, changes, false, asyncCall, true);
+        Long parentId = getNodeIdNotNull(parent);
+        nodeAclCache.put(parentId, inheritFrom);
+        setFixedAcls(parentId, inheritFrom, null, sharedAclToReplace, changes, false, asyncCall, true);
         return changes;
     }
 

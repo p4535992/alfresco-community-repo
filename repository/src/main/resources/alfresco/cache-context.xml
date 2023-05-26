@@ -307,6 +307,16 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- Node ACL cache                      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for node Acls -->
+
+   <bean name="nodeAclCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.nodeAclCache"/>
+   </bean>
+
+   <!-- ===================================== -->
    <!-- ACL Entity cache                      -->
    <!-- ===================================== -->
    
